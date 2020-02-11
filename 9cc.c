@@ -128,17 +128,29 @@ Node *primary() {
     return new_node_num(expect_number());
 }
 
+Node *unary() {
+    if (consume('+'))
+    {
+        return primary();
+    }
+    if (consume('-'))
+    {
+        return new_node(ND_SUB, new_node_num(0), primary());
+    }
+    return primary();
+}
+
 Node *mul() {
-    Node *node = primary();
+    Node *node = unary();
     for (;;)
     {
         if (consume('*'))
         {
-            node = new_node(ND_MUL, node, primary());
+            node = new_node(ND_MUL, node, unary());
         }
         else if (consume('/'))
         {
-            node = new_node(ND_DIV, node, primary());
+            node = new_node(ND_DIV, node, unary());
         }
         else
         {
@@ -169,34 +181,34 @@ Node *expr() {
 void gen(Node *node) {
     if (node->kind == ND_NUM)
     {
-        printf("  push %d\n", node->val);
+        printf("	push %d\n", node->val);
         return;
     }
 
     gen(node->lhs);
     gen(node->rhs);
 
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
+    printf("	pop rdi\n");
+    printf("	pop rax\n");
 
     switch (node->kind)
     {
     case ND_ADD:
-        printf("  add rax, rdi\n");
+        printf("	add rax, rdi\n");
         break;
     case ND_SUB:
-        printf("  sub rax, rdi\n");
+        printf("	sub rax, rdi\n");
         break;
     case ND_MUL:
-        printf("  imul rax, rdi\n");
+        printf("	imul rax, rdi\n");
         break;
     case ND_DIV:
-        printf("  cqo\n");
-        printf("  idiv rdi\n");
+        printf("	cqo\n");
+        printf("	idiv rdi\n");
         break;
     }
 
-    printf("  push rax\n");
+    printf("	push rax\n");
 }
 
 Token *tokenize(char *p) {
@@ -249,7 +261,7 @@ int main(int argc, char **argv) {
 
     gen(node);
 
-    printf("  pop rax\n");
-    printf("  ret\n");
+    printf("	pop rax\n");
+    printf("	ret\n");
     return 0;
 }
