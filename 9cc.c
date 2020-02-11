@@ -142,11 +142,11 @@ Node *primary() {
 Node *unary() {
     if (consume("+"))
     {
-        return unary();
+        return primary();
     }
     if (consume("-"))
     {
-        return new_binary(ND_SUB, new_node_num(0), unary());
+        return new_binary(ND_SUB, new_node_num(0), primary());
     }
     return primary();
 }
