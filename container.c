@@ -64,7 +64,7 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>')
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';')
         {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
@@ -79,6 +79,12 @@ Token *tokenize(char *p)
             continue;
         }
 
+        if (*p >= 'a' && *p <= 'z')
+        {
+            cur = new_token(TK_IDENT, cur, p++, 1);
+            continue;
+        }
+        
         error_at(cur->str + 1, "トークナイズできません");
     }
 
