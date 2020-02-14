@@ -48,16 +48,22 @@ struct Node
     int offset;
 };
 
-Token *token;
+typedef struct LVar LVar;
+struct LVar
+{
+    LVar *next;
+    char *name;
+    int len;
+    int offset;
+};
 
-char *user_input;
-
-Node *code[100];
+extern Token *token;
+extern char *user_input;
+extern Node *code[100];
 
 // container.c
 void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
-bool at_eof();
 Token *tokenize(char *p);
 
 // codegen.c
