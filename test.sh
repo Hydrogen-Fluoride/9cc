@@ -52,4 +52,6 @@ try 8 'aho=2; z1a=3; aho=5; aho+z1a;'
 try 8 'aho=2; z1a=3; aho=5; return aho+z1a;'
 try 5 'aho=2; z_a=3; return aho+z_a; aho=5;'
 
+try 7 'a = 3; b = 4; if (a != b) return a + b;'
+
 echo OK

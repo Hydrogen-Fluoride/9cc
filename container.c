@@ -53,6 +53,11 @@ bool is_alnum(char c)
     return (c >= 'a' && c <= 'z') || (c >='A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
 }
 
+bool is_nreserved(char *p, char *q, int n)
+{
+    return strncmp(p, q, n) == 0 && !is_alnum(p[n]);
+}
+
 Token *tokenize(char *p)
 {
     Token head;
@@ -89,10 +94,17 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6]))
+        if (is_nreserved(p, "return", 6))
         {
             cur = new_token(TK_RETURN, cur, p, 6);
             p += 6;
+            continue;
+        }
+
+        if (is_nreserved(p, "if", 2))
+        {
+            cur = new_token(TK_IF, cur, p, 2);
+            p += 2;
             continue;
         }
 

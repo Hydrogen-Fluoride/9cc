@@ -40,9 +40,9 @@ Token *consume_ident()
     return ret;
 }
 
-bool consume_return()
+bool consume_token(TokenKind tk)
 {
-    if (token->kind != TK_RETURN)
+    if (token->kind != tk)
     {
         return false;
     }
@@ -110,17 +110,27 @@ void program()
 Node *stmt()
 {
     Node *node;
-    if (consume_return())
+    if (consume_token(TK_RETURN))
     {
         node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
         node->lhs = expr();
+        expect(";");
+    }
+    else if (consume_token(TK_IF))
+    {
+        expect("(");
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_IF;
+        node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
     }
     else
     {
         node = expr();
+        expect(";");
     }
-    expect(";");
     return node;
 }
 

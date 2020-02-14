@@ -11,7 +11,11 @@ typedef enum
     TK_IDENT,
     TK_NUM,
     TK_EOF,
-    TK_RETURN
+    TK_RETURN,
+    TK_IF,
+    TK_ELSE,
+    TK_WHILE,
+    TK_FOR
 } TokenKind;
 
 typedef enum
@@ -27,7 +31,8 @@ typedef enum
     ND_ASSIGN,
     ND_LVAR,
     ND_NUM,
-    ND_RETURN
+    ND_RETURN,
+    ND_IF
 } NodeKind;
 
 typedef struct Token Token;
