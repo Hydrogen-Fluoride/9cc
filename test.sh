@@ -48,6 +48,8 @@ try 0 '1>=2;'
 
 try 4 'a=1; a+3;'
 try 5 'a=2; z=3; a+z;'
-try 8 'aho=2; zka=3; aho=5; aho+zka;'
+try 8 'aho=2; z1a=3; aho=5; aho+z1a;'
+try 8 'aho=2; z1a=3; aho=5; return aho+z1a;'
+try 5 'aho=2; z_a=3; return aho+z_a; aho=5;'
 
 echo OK

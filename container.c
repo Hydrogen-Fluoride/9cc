@@ -38,6 +38,11 @@ bool startswith(char *p, char *q)
     return memcmp(p, q, strlen(q)) == 0;
 }
 
+bool is_alnum(char c)
+{
+    return (c >= 'a' && c <= 'z') || (c >='A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
+}
+
 Token *tokenize(char *p)
 {
     Token head;
@@ -74,11 +79,20 @@ Token *tokenize(char *p)
             continue;
         }
 
+        if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6]))
+        {
+            cur = new_token(TK_RETURN, cur, p, 6);
+            p += 6;
+            continue;
+        }
+
         if (*p >= 'a' && *p <= 'z')
         {
             char *tmp = p;
             int cnt = 0;
-            while (*p >= 'a' && *p <= 'z')
+            while (!(isspace(*p) ||
+                startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">=") ||
+                *p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';'))
             {
                 p++;
             }
