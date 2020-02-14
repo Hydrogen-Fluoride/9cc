@@ -125,6 +125,11 @@ Node *stmt()
         node->lhs = expr();
         expect(")");
         node->rhs = stmt();
+        if (consume_token(TK_ELSE))
+        {
+            node->kind = ND_IFELSE;
+            node->children[2] = stmt();
+        }
     }
     else
     {

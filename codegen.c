@@ -50,6 +50,17 @@ void gen(Node *node)
         gen(node->rhs);
         printf(".Lend%d:\n", labelnum++);
         return;
+    case ND_IFELSE:
+        gen(node->lhs);
+        printf("    pop rax\n");
+        printf("    cmp rax, 0\n");
+        printf("    je .Lelse%d\n", labelnum++);
+        gen(node->rhs);
+        printf("    jmp .Lend%d\n", labelnum++);
+        printf(".Lelse%d:\n", labelnum - 2);
+        gen(node->children[2]);
+        printf(".Lend%d:\n", labelnum - 1);
+        return;
     } 
 
     gen(node->lhs);

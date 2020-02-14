@@ -108,6 +108,14 @@ Token *tokenize(char *p)
             continue;
         }
 
+        if (is_nreserved(p, "else", 4))
+        {
+            cur = new_token(TK_ELSE, cur, p, 4);
+            p += 4;
+            continue;
+        }
+        
+
         if (*p >= 'a' && *p <= 'z')
         {
             char *tmp = p;
