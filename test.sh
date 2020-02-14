@@ -54,5 +54,8 @@ try 5 'aho=2; z_a=3; return aho+z_a; aho=5;'
 
 try 7 'a = 3; b = 4; if (a != b) return a + b;'
 try 1 'a = 4; b = 3; if (a == b) return a + b; else return a - b;'
+try 7 'a = 4; b = 3; if (a != b) return a + b; else return a - b;'
+try 4 'a = 4; b = 3; if (a != b) if (a > b) return a; else return b; else return a - b;'
+try 5 'a = 5; b = 0; while (a != b) b = b + 1; return b;'
 
 echo OK

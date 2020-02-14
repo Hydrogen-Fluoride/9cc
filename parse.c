@@ -131,6 +131,15 @@ Node *stmt()
             node->children[2] = stmt();
         }
     }
+    else if (consume_token(TK_WHILE))
+    {
+        expect("(");
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_WHILE;
+        node->lhs = expr();
+        expect(")");
+        node->rhs = stmt();
+    }
     else
     {
         node = expr();

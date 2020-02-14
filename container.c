@@ -53,9 +53,9 @@ bool is_alnum(char c)
     return (c >= 'a' && c <= 'z') || (c >='A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
 }
 
-bool is_nreserved(char *p, char *q, int n)
+bool is_reservedn(char *p, char *q)
 {
-    return strncmp(p, q, n) == 0 && !is_alnum(p[n]);
+    return strncmp(p, q, strlen(q)) == 0 && !is_alnum(p[strlen(q)]);
 }
 
 Token *tokenize(char *p)
@@ -94,27 +94,33 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (is_nreserved(p, "return", 6))
+        if (is_reservedn(p, "return"))
         {
             cur = new_token(TK_RETURN, cur, p, 6);
             p += 6;
             continue;
         }
 
-        if (is_nreserved(p, "if", 2))
+        if (is_reservedn(p, "if"))
         {
             cur = new_token(TK_IF, cur, p, 2);
             p += 2;
             continue;
         }
 
-        if (is_nreserved(p, "else", 4))
+        if (is_reservedn(p, "else"))
         {
             cur = new_token(TK_ELSE, cur, p, 4);
             p += 4;
             continue;
         }
         
+        if (is_reservedn(p, "while"))
+        {
+            cur = new_token(TK_WHILE, cur, p, 5);
+            p += 5;
+            continue;
+        }
 
         if (*p >= 'a' && *p <= 'z')
         {

@@ -33,7 +33,8 @@ typedef enum
     ND_NUM,
     ND_RETURN,
     ND_IF,
-    ND_IFELSE
+    ND_IFELSE,
+    ND_WHILE
 } NodeKind;
 
 typedef struct Token Token;
