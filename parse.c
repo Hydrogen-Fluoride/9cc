@@ -140,6 +140,43 @@ Node *stmt()
         expect(")");
         node->rhs = stmt();
     }
+    else if (consume_token(TK_FOR))
+    {
+        expect("(");
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_FOR;
+        if (!consume(";"))
+        {
+            node->lhs = expr();
+            expect(";");
+        }
+        else
+        {
+            node->lhs = calloc(1, sizeof(Node));
+            node->lhs->kind = ND_NULL;
+        }
+        if (!consume(";"))
+        {
+            node->rhs = expr();
+            expect(";");
+        }
+        else
+        {
+            node->rhs = calloc(1, sizeof(Node));
+            node->rhs->kind = ND_NULL;
+        }
+        if (!consume(")"))
+        {
+            node->children[2] = expr();
+            expect(")");
+        }
+        else
+        {
+            node->children[2] = calloc(1, sizeof(Node));
+            node->children[2]->kind = ND_NULL;
+        }
+        node->children[3] = stmt();
+    }
     else
     {
         node = expr();
