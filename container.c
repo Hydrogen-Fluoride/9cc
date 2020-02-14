@@ -38,6 +38,16 @@ bool startswith(char *p, char *q)
     return memcmp(p, q, strlen(q)) == 0;
 }
 
+bool is_reserved1(char *p)
+{
+    return *p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';';
+}
+
+bool is_reserved2(char *p)
+{
+    return startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">=");
+}
+
 bool is_alnum(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >='A' && c <= 'Z') || (c >= '0' && c <= '9') || (c == '_');
@@ -57,14 +67,14 @@ Token *tokenize(char *p)
             continue;
         }
 
-        if (startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">="))
+        if (is_reserved2(p))
         {
             cur = new_token(TK_RESERVED, cur, p, 2);
             p += 2;
             continue;
         }
 
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';')
+        if (is_reserved1(p))
         {
             cur = new_token(TK_RESERVED, cur, p++, 1);
             continue;
@@ -90,9 +100,7 @@ Token *tokenize(char *p)
         {
             char *tmp = p;
             int cnt = 0;
-            while (!(isspace(*p) ||
-                startswith(p, "==") || startswith(p, "!=") || startswith(p, "<=") || startswith(p, ">=") ||
-                *p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';'))
+            while (!(isspace(*p) || is_reserved2(p) || is_reserved1(p)))
             {
                 p++;
             }
