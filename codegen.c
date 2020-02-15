@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 int labelnum = 0;
+char *rg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void gen_lval(Node *node)
 {
@@ -96,6 +97,13 @@ void gen(Node *node)
         }
         return;
     case ND_FUNC:
+        for (int i = 0; i < 6 && node->arg[i] != NULL; i++)
+        {
+            gen(node->arg[i]);
+            printf("    pop rax\n");
+            printf("    mov %s, rax\n", rg[i]);
+        }
+        // rspを16の倍数にする
         printf("    call %.*s\n", node->func->len, node->func->name);
         return;
     }

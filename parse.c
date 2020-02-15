@@ -338,7 +338,22 @@ Node *primary()
         {
             node->kind = ND_FUNC;
             node->func = lvar;
-            expect(")");
+            int i = 0;
+            while (true)
+            {
+                if (consume(")"))
+                {
+                    break;
+                }
+                node->arg[i] = primary();
+                i++;
+                if (consume(")"))
+                {
+                    break;
+                }
+                expect(",");
+            }
+            node->arg[i] = NULL;
         }
         return node;
     }

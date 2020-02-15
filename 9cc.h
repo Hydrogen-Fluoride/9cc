@@ -72,6 +72,7 @@ struct Node
     int val;
     int offset;
     LVar *func;
+    Node *arg[6];
 };
 
 extern Token *token;
