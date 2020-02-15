@@ -35,8 +35,7 @@ typedef enum
     ND_IF,
     ND_IFELSE,
     ND_WHILE,
-    ND_FOR,
-    ND_NULL
+    ND_FOR
 } NodeKind;
 
 typedef struct Token Token;
@@ -55,7 +54,9 @@ struct Node
     NodeKind kind;
     Node *lhs;
     Node *rhs;
-    Node *children[100];
+    Node *init;
+    Node *cond;
+    Node *update;
     int val;
     int offset;
 };

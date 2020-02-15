@@ -122,13 +122,13 @@ Node *stmt()
         expect("(");
         node = calloc(1, sizeof(Node));
         node->kind = ND_IF;
-        node->lhs = expr();
+        node->cond = expr();
         expect(")");
-        node->rhs = stmt();
+        node->lhs = stmt();
         if (consume_token(TK_ELSE))
         {
             node->kind = ND_IFELSE;
-            node->children[2] = stmt();
+            node->rhs = stmt();
         }
     }
     else if (consume_token(TK_WHILE))
@@ -136,9 +136,9 @@ Node *stmt()
         expect("(");
         node = calloc(1, sizeof(Node));
         node->kind = ND_WHILE;
-        node->lhs = expr();
+        node->cond = expr();
         expect(")");
-        node->rhs = stmt();
+        node->lhs = stmt();
     }
     else if (consume_token(TK_FOR))
     {
@@ -147,35 +147,20 @@ Node *stmt()
         node->kind = ND_FOR;
         if (!consume(";"))
         {
-            node->lhs = expr();
+            node->init = expr();
             expect(";");
-        }
-        else
-        {
-            node->lhs = calloc(1, sizeof(Node));
-            node->lhs->kind = ND_NULL;
         }
         if (!consume(";"))
         {
-            node->rhs = expr();
+            node->cond = expr();
             expect(";");
-        }
-        else
-        {
-            node->rhs = calloc(1, sizeof(Node));
-            node->rhs->kind = ND_NULL;
         }
         if (!consume(")"))
         {
-            node->children[2] = expr();
+            node->update = expr();
             expect(")");
         }
-        else
-        {
-            node->children[2] = calloc(1, sizeof(Node));
-            node->children[2]->kind = ND_NULL;
-        }
-        node->children[3] = stmt();
+        node->lhs = stmt();
     }
     else
     {

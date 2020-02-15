@@ -17,10 +17,14 @@ void gen_lval(Node *node)
 void gen(Node *node)
 {
     int lelse, lend, lbegin;
+    if (node == NULL)
+    {
+        return;
+    }
     switch (node->kind)
     {
     case ND_NUM:
-        printf("	push %d\n", node->val);
+        printf("    push %d\n", node->val);
         return;
     case ND_LVAR:
         gen_lval(node);
@@ -44,70 +48,68 @@ void gen(Node *node)
         printf("    ret\n");
         return;
     case ND_IF:
-        gen(node->lhs);
+        gen(node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lend%d\n", lend = labelnum++);
-        gen(node->rhs);
+        gen(node->lhs);
         printf(".Lend%d:\n", lend);
         return;
     case ND_IFELSE:
-        gen(node->lhs);
+        gen(node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lelse%d\n", lelse = labelnum++);
-        gen(node->rhs);
+        gen(node->lhs);
         printf("    jmp .Lend%d\n", lend = labelnum++);
         printf(".Lelse%d:\n", lelse);
-        gen(node->children[2]);
+        gen(node->rhs);
         printf(".Lend%d:\n", lend);
         return;
     case ND_WHILE:
-        gen(node->lhs);
         printf(".Lbegin%d:\n", lbegin = labelnum++);
-        gen(node->lhs);
+        gen(node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lend%d\n", lend = labelnum++);
-        gen(node->rhs);
+        gen(node->lhs);
         printf("    jmp .Lbegin%d\n", lbegin);
         printf(".Lend%d:\n", lend);
         return;
     case ND_FOR:
-        gen(node->lhs);
+        gen(node->init);
         printf(".Lbegin%d:\n", lbegin = labelnum++);
-        gen(node->rhs);
+        gen(node->cond);
         printf("    pop rax\n");
         printf("    cmp rax, 0\n");
         printf("    je .Lend%d\n", lend = labelnum++);
-        gen(node->children[3]);
-        gen(node->children[2]);
+        gen(node->lhs);
+        gen(node->update);
         printf("    jmp .Lbegin%d\n", lbegin);
         printf(".Lend%d:\n", lend);
-    case ND_NULL:
         return;
     }
 
     gen(node->lhs);
     gen(node->rhs);
 
-    printf("	pop rdi\n");
-    printf("	pop rax\n");
+    printf("    pop rdi\n");
+    printf("    pop rax\n");
 
     switch (node->kind)
     {
     case ND_ADD:
-        printf("	add rax, rdi\n");
+        printf("    add rax, rdi\n");
         break;
     case ND_SUB:
-        printf("	sub rax, rdi\n");
+        printf("    sub rax, rdi\n");
         break;
     case ND_MUL:
-        printf("	imul rax, rdi\n");
+        printf("    imul rax, rdi\n");
         break;
     case ND_DIV:
-        printf("	cqo\n");
-        printf("	idiv rdi\n");
+        printf("    cqo\n");
+        printf("    idiv rdi\n");
         break;
     case ND_EQ:
         printf("    cmp rax, rdi\n");
@@ -131,5 +133,5 @@ void gen(Node *node)
         break;
     }
 
-    printf("	push rax\n");
+    printf("    push rax\n");
 }
