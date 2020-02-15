@@ -162,6 +162,18 @@ Node *stmt()
         }
         node->lhs = stmt();
     }
+    else if (consume("{"))
+    {
+        node = calloc(1, sizeof(Node));
+        node->kind = ND_BLOCK;
+        int i = 0;
+        while (!consume("}"))
+        {
+            node->statement[i] = stmt();
+            i++;
+        }
+        node->statement[i] = NULL;
+    }
     else
     {
         node = expr();

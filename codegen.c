@@ -88,6 +88,13 @@ void gen(Node *node)
         printf("    jmp .Lbegin%d\n", lbegin);
         printf(".Lend%d:\n", lend);
         return;
+    case ND_BLOCK:
+        for (int i = 0; node->statement[i] != NULL; i++)
+        {
+            gen(node->statement[i]);
+            printf("    pop rax\n");
+        }
+        return;
     }
 
     gen(node->lhs);

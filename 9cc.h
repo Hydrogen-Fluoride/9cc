@@ -35,7 +35,8 @@ typedef enum
     ND_IF,
     ND_IFELSE,
     ND_WHILE,
-    ND_FOR
+    ND_FOR,
+    ND_BLOCK
 } NodeKind;
 
 typedef struct Token Token;
@@ -57,6 +58,7 @@ struct Node
     Node *init;
     Node *cond;
     Node *update;
+    Node *statement[100];
     int val;
     int offset;
 };
