@@ -4,7 +4,7 @@ try() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -o tmp tmp.s
+    gcc -o tmp test.o tmp.s
     ./tmp
     actual="$?"
 
@@ -62,5 +62,6 @@ try 10 'a = 5; for(; a < 10 ;) a = a + 1; return a;'
 try 4 'a = 4; b = 3; if (a == b) return a + b; else if (a > b) return a; else return b;'
 try 2 'a = 4; b = 5; if (a == b) { return a + b; } else { a = 1; b = 1; return a + b; }'
 try 9 'a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }'
+try 0 'foo();'
 
 echo OK

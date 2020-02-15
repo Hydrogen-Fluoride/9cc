@@ -334,6 +334,12 @@ Node *primary()
             node->offset = lvar->offset;
             locals = lvar;
         }
+        if (consume("("))
+        {
+            node->kind = ND_FUNC;
+            node->func = lvar;
+            expect(")");
+        }
         return node;
     }
     

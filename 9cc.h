@@ -36,7 +36,8 @@ typedef enum
     ND_IFELSE,
     ND_WHILE,
     ND_FOR,
-    ND_BLOCK
+    ND_BLOCK,
+    ND_FUNC
 } NodeKind;
 
 typedef struct Token Token;
@@ -47,6 +48,15 @@ struct Token
     int val;
     char *str;
     int len;
+};
+
+typedef struct LVar LVar;
+struct LVar
+{
+    LVar *next;
+    char *name;
+    int len;
+    int offset;
 };
 
 typedef struct Node Node;
@@ -61,15 +71,7 @@ struct Node
     Node *statement[100];
     int val;
     int offset;
-};
-
-typedef struct LVar LVar;
-struct LVar
-{
-    LVar *next;
-    char *name;
-    int len;
-    int offset;
+    LVar *func;
 };
 
 extern Token *token;
