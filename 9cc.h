@@ -37,7 +37,8 @@ typedef enum
     ND_WHILE,
     ND_FOR,
     ND_BLOCK,
-    ND_FUNC
+    ND_FUNC,
+    ND_FUNCDEF
 } NodeKind;
 
 typedef struct Token Token;
@@ -72,6 +73,8 @@ struct Node
     int val;
     int offset;
     LVar *func;
+    char *funcname;
+    int funclen;
     Node *arg[6];
 };
 

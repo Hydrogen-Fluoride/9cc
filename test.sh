@@ -61,7 +61,7 @@ try() {
 # try 10 'a = 5; for(; a < 10 ;) a = a + 1; return a;'
 # try 4 'a = 4; b = 3; if (a == b) return a + b; else if (a > b) return a; else return b;'
 # try 2 'a = 4; b = 5; if (a == b) { return a + b; } else { a = 1; b = 1; return a + b; }'
-try 9 'main(){a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
+# try 9 'main(){a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
 try 0 'main(){return foo();}'
 try 0 'main(){return bar(1, 2);}'
 try 9 'main(){return four() + five();}'

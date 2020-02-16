@@ -97,15 +97,40 @@ void gen(Node *node)
         }
         return;
     case ND_FUNC:
-        for (int i = 0; i < 6 && node->arg[i] != NULL; i++)
+        for (int i = 0; i < 6 && node->arg[i]; i++)
         {
             gen(node->arg[i]);
             printf("    pop rax\n");
             printf("    mov %s, rax\n", rg[i]);
         }
         // rspを16の倍数にする
-        printf("    call %.*s\n", node->func->len, node->func->name);
+        printf("    call %.*s\n", node->funclen, node->funcname);
         printf("    push rax\n");
+        return;
+    case ND_FUNCDEF:
+        printf("%.*s:\n", node->funclen, node->funcname);
+        // プロローグ
+        printf("    push rbp\n");
+        printf("    mov rbp, rsp\n");
+        printf("    sub rsp, %d\n", node->offset);
+        for (int i = 0; node->arg[i]; i++)
+        {
+            printf("    mov rax, rbp\n");
+            printf("    sub rax, %d\n", 8 * (1 + i));
+            printf("    push %s\n", rg[i]);
+            printf("    pop rdi\n");
+            printf("    mov [rax], rdi\n");
+            printf("    push rdi\n");
+        }
+        for (int i = 0; node->statement[i]; i++)
+        {
+            gen(node->statement[i]);
+            printf("    pop rax\n");
+        }
+        // エピローグ
+        printf("    mov rsp, rbp\n");
+        printf("	pop rbp\n");
+        printf("	ret\n");
         return;
     }
 

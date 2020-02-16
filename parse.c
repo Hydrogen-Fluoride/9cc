@@ -111,19 +111,72 @@ void program()
 Node *func()
 {
     locals = NULL;
-    Node *node = primary();
-    if (node->kind != ND_FUNC)
+    Token *tok = consume_ident();
+    if (!tok)
     {
         error_at(token->str, "関数ではありません");
     }
-    consume("{");
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_FUNCDEF;
+    node->funcname = tok->str;
+    node->funclen = tok->len;
+    expect("(");
     int i = 0;
+    while (true)
+    {
+        if (consume(")"))
+        {
+            break;
+        }
+        node->arg[i] = calloc(1, sizeof(Node));
+        node->arg[i]->kind = ND_LVAR;
+        tok = consume_ident();
+        if (!tok)
+        {
+            error_at(token->str, "引数ではありません");
+        }
+        LVar *lvar = find_lvar(tok);
+        if (lvar)
+        {
+            error_at(token->str, "引数名が重複しています");
+        }
+        lvar = calloc(1, sizeof(LVar));
+        lvar->next = locals;
+        lvar->name = tok->str;
+        lvar->len = tok->len;
+        if (locals == NULL)
+        {
+            lvar->offset = 8;
+        }
+        else
+        {
+            lvar->offset = locals->offset + 8;
+        }
+        node->arg[i]->offset = lvar->offset;
+        locals = lvar;
+        i++;
+        if (consume(")"))
+        {
+            break;
+        }
+        expect(",");
+    }
+    node->arg[i] = NULL;
+    expect("{");
+    i = 0;
     while (!consume("}"))
     {
         node->statement[i++] = stmt();
     }
     node->statement[i] = NULL;
-    node->offset = locals->offset;
+    if (locals == NULL)
+    {
+        node->offset = 0;
+    }
+    else
+    {
+        node->offset = locals->offset;
+    }
     return node;
 }
 
@@ -330,33 +383,11 @@ Node *primary()
     if (tok)
     {
         Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
-        LVar *lvar = find_lvar(tok);
-        if (lvar)
-        {
-            node->offset = lvar->offset;
-        }
-        else
-        {
-            lvar = calloc(1, sizeof(LVar));
-            lvar->next = locals;
-            lvar->name = tok->str;
-            lvar->len = tok->len;
-            if (locals == NULL)
-            {
-                lvar->offset = 8;
-            }
-            else
-            {
-                lvar->offset = locals->offset + 8;
-            }
-            node->offset = lvar->offset;
-            locals = lvar;
-        }
         if (consume("("))
         {
             node->kind = ND_FUNC;
-            node->func = lvar;
+            node->funcname = tok->str;
+            node->funclen = tok->len;
             int i = 0;
             while (true)
             {
@@ -373,6 +404,32 @@ Node *primary()
                 expect(",");
             }
             node->arg[i] = NULL;
+        }
+        else
+        {
+            node->kind = ND_LVAR;
+            LVar *lvar = find_lvar(tok);
+            if (lvar)
+            {
+                node->offset = lvar->offset;
+            }
+            else
+            {
+                lvar = calloc(1, sizeof(LVar));
+                lvar->next = locals;
+                lvar->name = tok->str;
+                lvar->len = tok->len;
+                if (locals == NULL)
+                {
+                    lvar->offset = 8;
+                }
+                else
+                {
+                    lvar->offset = locals->offset + 8;
+                }
+                node->offset = lvar->offset;
+                locals = lvar;
+            }
         }
         return node;
     }
