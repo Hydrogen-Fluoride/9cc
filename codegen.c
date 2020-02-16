@@ -105,6 +105,7 @@ void gen(Node *node)
         }
         // rspを16の倍数にする
         printf("    call %.*s\n", node->func->len, node->func->name);
+        printf("    push rax\n");
         return;
     }
 

@@ -78,6 +78,7 @@ struct Node
 extern Token *token;
 extern char *user_input;
 extern Node *code[100];
+extern char *rg[6];
 
 // container.c
 void error_at(char *loc, char *fmt, ...);

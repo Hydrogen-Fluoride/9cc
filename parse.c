@@ -87,6 +87,7 @@ LVar *find_lvar(Token *tok)
     return NULL;
 }
 
+Node *func();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -102,9 +103,28 @@ void program()
     int i = 0;
     while (!at_eof())
     {
-        code[i++] = stmt();
+        code[i++] = func();
     }
     code[i] = NULL;
+}
+
+Node *func()
+{
+    locals = NULL;
+    Node *node = primary();
+    if (node->kind != ND_FUNC)
+    {
+        error_at(token->str, "関数ではありません");
+    }
+    consume("{");
+    int i = 0;
+    while (!consume("}"))
+    {
+        node->statement[i++] = stmt();
+    }
+    node->statement[i] = NULL;
+    node->offset = locals->offset;
+    return node;
 }
 
 Node *stmt()
@@ -169,8 +189,7 @@ Node *stmt()
         int i = 0;
         while (!consume("}"))
         {
-            node->statement[i] = stmt();
-            i++;
+            node->statement[i++] = stmt();
         }
         node->statement[i] = NULL;
     }
@@ -345,7 +364,7 @@ Node *primary()
                 {
                     break;
                 }
-                node->arg[i] = primary();
+                node->arg[i] = expr();
                 i++;
                 if (consume(")"))
                 {
