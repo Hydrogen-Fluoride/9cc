@@ -86,6 +86,8 @@ extern char *rg[6];
 // container.c
 void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
+
+// tokenize.c
 Token *tokenize(char *p);
 
 // codegen.c
