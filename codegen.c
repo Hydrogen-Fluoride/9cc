@@ -18,7 +18,7 @@ void gen_lval(Node *node)
 void gen(Node *node)
 {
     int lelse, lend, lbegin;
-    if (node == NULL)
+    if (!node)
     {
         return;
     }
@@ -129,6 +129,15 @@ void gen(Node *node)
         printf("    mov rsp, rbp\n");
         printf("	pop rbp\n");
         printf("	ret\n");
+        return;
+    case ND_ADDR:
+        gen_lval(node->lhs);
+        return;
+    case ND_DEREF:
+        gen(node->lhs);
+        printf("    pop rax\n");
+        printf("    mov rax, [rax]\n");
+        printf("    push rax\n");
         return;
     }
 

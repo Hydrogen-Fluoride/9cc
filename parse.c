@@ -353,6 +353,14 @@ Node *unary()
     {
         return new_binary(ND_SUB, new_node_num(0), primary());
     }
+    if (consume("&"))
+    {
+        return new_binary(ND_ADDR, unary(), NULL);
+    }
+    if (consume("*"))
+    {
+        return new_binary(ND_DEREF, unary(), NULL);
+    }
     return primary();
 }
 
@@ -405,7 +413,7 @@ Node *primary()
                 lvar->next = locals;
                 lvar->name = tok->str;
                 lvar->len = tok->len;
-                lvar->offset = locals ? locals->offset + 8 : 8;
+                lvar->offset = locals ? (locals->offset + 8) : 8;
                 node->offset = lvar->offset;
                 locals = lvar;
             }

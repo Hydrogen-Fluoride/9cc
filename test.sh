@@ -61,7 +61,7 @@ try() {
 # try 10 'a = 5; for(; a < 10 ;) a = a + 1; return a;'
 # try 4 'a = 4; b = 3; if (a == b) return a + b; else if (a > b) return a; else return b;'
 # try 2 'a = 4; b = 5; if (a == b) { return a + b; } else { a = 1; b = 1; return a + b; }'
-# try 9 'main(){a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
+try 9 'main(){a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
 try 0 'main(){return foo();}'
 try 0 'main(){return bar(1, 2);}'
 try 9 'main(){return four() + five();}'
@@ -70,4 +70,7 @@ try 6 'te(a) {return a+a;} main() {return te(3);}'
 try 9 'te(a, b, c) {return a + b + c;} main() {return te(3, 4, 2);}'
 try 14 'te(a, b, c) {return a * b + c;} main() {return te(3, 4, 2);}'
 try 5 'fib(a) {if (a == 0) return 1; else if (a == 1) return 1; else return fib(a - 1) + fib(a - 2);} main(){return fib(4);}';
+try 3 'main(){x = 3; y = &x; return *y;}'
+try 3 'main(){x = 3; y = 6; z = &y + 8; return *z;}'
+
 echo OK
