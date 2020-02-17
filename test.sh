@@ -68,5 +68,6 @@ try 9 'main(){return four() + five();}'
 try 5 'te() {return 5;} main() {return te();}'
 try 6 'te(a) {return a+a;} main() {return te(3);}'
 try 9 'te(a, b, c) {return a + b + c;} main() {return te(3, 4, 2);}'
+try 14 'te(a, b, c) {return a * b + c;} main() {return te(3, 4, 2);}'
 try 5 'fib(a) {if (a == 0) return 1; else if (a == 1) return 1; else return fib(a - 1) + fib(a - 2);} main(){return fib(4);}';
 echo OK

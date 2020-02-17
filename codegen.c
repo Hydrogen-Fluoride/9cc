@@ -116,10 +116,8 @@ void gen(Node *node)
         for (int i = 0; node->arg[i]; i++)
         {
             printf("    mov rax, rbp\n");
-            printf("    sub rax, %d\n", 8 * (1 + i));
-            printf("    push %s\n", rg[i]);
-            printf("    pop rdi\n");
-            printf("    mov [rax], rdi\n");
+            printf("    sub rax, %d\n", node->arg[i]->offset);
+            printf("    mov [rax], %s\n", rg[i]);
             printf("    push rdi\n");
         }
         for (int i = 0; node->statement[i]; i++)

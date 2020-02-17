@@ -144,14 +144,7 @@ Node *func()
         lvar->next = locals;
         lvar->name = tok->str;
         lvar->len = tok->len;
-        if (locals == NULL)
-        {
-            lvar->offset = 8;
-        }
-        else
-        {
-            lvar->offset = locals->offset + 8;
-        }
+        lvar->offset = locals ? (locals->offset + 8) : 8;
         node->arg[i]->offset = lvar->offset;
         locals = lvar;
         i++;
@@ -169,14 +162,7 @@ Node *func()
         node->statement[i++] = stmt();
     }
     node->statement[i] = NULL;
-    if (locals == NULL)
-    {
-        node->offset = 0;
-    }
-    else
-    {
-        node->offset = locals->offset;
-    }
+    node->offset = locals ? locals->offset : 0;
     return node;
 }
 
@@ -419,14 +405,7 @@ Node *primary()
                 lvar->next = locals;
                 lvar->name = tok->str;
                 lvar->len = tok->len;
-                if (locals == NULL)
-                {
-                    lvar->offset = 8;
-                }
-                else
-                {
-                    lvar->offset = locals->offset + 8;
-                }
+                lvar->offset = locals ? locals->offset + 8 : 8;
                 node->offset = lvar->offset;
                 locals = lvar;
             }
