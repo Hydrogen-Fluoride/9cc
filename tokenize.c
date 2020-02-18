@@ -106,6 +106,14 @@ Token *tokenize(char *p)
             continue;
         }
 
+        if (is_reservedn(p, "int"))
+        {
+            cur = new_token(TK_INT, cur, p, 3);
+            p += 3;
+            continue;
+        }
+        
+
         if (*p >= 'a' && *p <= 'z')
         {
             char *tmp = p;

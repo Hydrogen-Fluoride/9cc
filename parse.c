@@ -111,6 +111,10 @@ void program()
 Node *func()
 {
     locals = NULL;
+    if (!consume_token(TK_INT))
+    {
+        error_at(token->str, "intではありません");
+    }
     Token *tok = consume_ident();
     if (!tok)
     {
@@ -127,6 +131,10 @@ Node *func()
         if (consume(")"))
         {
             break;
+        }
+        if (!consume_token(TK_INT))
+        {
+            error_at(token->str, "intではありません");
         }
         node->arg[i] = calloc(1, sizeof(Node));
         node->arg[i]->kind = ND_LVAR;
@@ -169,7 +177,33 @@ Node *func()
 Node *stmt()
 {
     Node *node;
-    if (consume_token(TK_RETURN))
+    if (consume_token(TK_INT))
+    {
+        Token *tok = consume_ident();
+        if (!tok)
+        {
+            error_at(token->str, "変数ではありません");
+        }
+        LVar *lvar = find_lvar(tok);
+        if (lvar)
+        {
+            error_at(token->str, "既に定義されている変数です");
+        }
+        else
+        {
+            node = calloc(1, sizeof(Node));
+            node->kind = ND_LVAR;
+            lvar = calloc(1, sizeof(LVar));
+            lvar->next = locals;
+            lvar->name = tok->str;
+            lvar->len = tok->len;
+            lvar->offset = locals ? (locals->offset + 8) : 8;
+            node->offset = lvar->offset;
+            locals = lvar;
+            consume(";");
+        }
+    }
+    else if (consume_token(TK_RETURN))
     {
         node = calloc(1, sizeof(Node));
         node->kind = ND_RETURN;
@@ -409,13 +443,7 @@ Node *primary()
             }
             else
             {
-                lvar = calloc(1, sizeof(LVar));
-                lvar->next = locals;
-                lvar->name = tok->str;
-                lvar->len = tok->len;
-                lvar->offset = locals ? (locals->offset + 8) : 8;
-                node->offset = lvar->offset;
-                locals = lvar;
+                error_at(token->str, "宣言されていない変数です");
             }
         }
         return node;
