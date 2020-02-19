@@ -2,6 +2,7 @@
 
 int labelnum = 0;
 char *rg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char *srg[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 void gen_lval(Node *node)
 {
@@ -10,12 +11,12 @@ void gen_lval(Node *node)
         gen(node->lhs);
         return;
     }
-    
+
     if (node->kind != ND_LVAR)
     {
         error("代入の左辺値が変数ではありません");
     }
-    
+
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
     printf("    push rax\n");
@@ -36,7 +37,14 @@ void gen(Node *node)
     case ND_LVAR:
         gen_lval(node);
         printf("    pop rax\n");
-        printf("    mov rax, [rax]\n");
+        if (node->type->ty == PTR)
+        {
+            printf("    mov rax, [rax]\n");
+        }
+        else
+        {
+            printf("    mov eax, DWORD PTR [rax]\n");
+        }
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
@@ -44,7 +52,14 @@ void gen(Node *node)
         gen(node->rhs);
         printf("    pop rdi\n");
         printf("    pop rax\n");
-        printf("    mov [rax], rdi\n");
+        if (node->lhs->type->ty == PTR)
+        {
+            printf("    mov [rax], rdi\n");
+        }
+        else
+        {
+            printf("    mov DWORD PTR [rax], edi\n");
+        }
         printf("    push rdi\n");
         return;
     case ND_RETURN:
@@ -123,7 +138,14 @@ void gen(Node *node)
         {
             printf("    mov rax, rbp\n");
             printf("    sub rax, %d\n", node->arg[i]->offset);
-            printf("    mov [rax], %s\n", rg[i]);
+            if (node->arg[i]->type->ty == PTR)
+            {
+                printf("    mov [rax], %s\n", rg[i]);
+            }
+            else
+            {
+                printf("    mov DWORD PTR [rax], %s\n", srg[i]);
+            }
             printf("    push rdi\n");
         }
         for (int i = 0; node->statement[i]; i++)
@@ -142,7 +164,14 @@ void gen(Node *node)
     case ND_DEREF:
         gen(node->lhs);
         printf("    pop rax\n");
-        printf("    mov rax, [rax]\n");
+        if (node->lhs->type->ty == PTR)
+        {
+            printf("    mov rax, [rax]\n");
+        }
+        else
+        {
+            printf("    mov eax, DWORD PTR [rax]\n");
+        }
         printf("    push rax\n");
         return;
     }

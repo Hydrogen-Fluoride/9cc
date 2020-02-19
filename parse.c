@@ -140,8 +140,10 @@ Node *func()
         type->ty = INT;
         while (consume("*"))
         {
-            type->ptr_to = type;
-            type->ty = PTR;
+            Type *newtype = calloc(1, sizeof(Type));
+            newtype->ptr_to = type;
+            newtype->ty = PTR;
+            type = newtype;
         }
         node->arg[i] = calloc(1, sizeof(Node));
         node->arg[i]->kind = ND_LVAR;
@@ -160,9 +162,9 @@ Node *func()
         lvar->name = tok->str;
         lvar->len = tok->len;
         lvar->type = type;
-        node->type = lvar->type;
-        int off = (type->ty == INT) ? 8 : 8;
+        int off = (type->ty == INT) ? 4 : 8;
         lvar->offset = locals ? (locals->offset + off) : off;
+        node->arg[i]->type = lvar->type;
         node->arg[i]->offset = lvar->offset;
         locals = lvar;
         i++;
@@ -193,8 +195,10 @@ Node *stmt()
         type->ty = INT;
         while (consume("*"))
         {
-            type->ptr_to = type;
-            type->ty = PTR;
+            Type *newtype = calloc(1, sizeof(Type));
+            newtype->ptr_to = type;
+            newtype->ty = PTR;
+            type = newtype;
         }
         Token *tok = consume_ident();
         if (!tok)
@@ -215,9 +219,9 @@ Node *stmt()
             lvar->name = tok->str;
             lvar->len = tok->len;
             lvar->type = type;
-            node->type = type;
-            int off = (type->ty == INT) ? 8 : 8;
+            int off = (type->ty == INT) ? 4 : 8;
             lvar->offset = locals ? (locals->offset + off) : off;
+            node->type = type;
             node->offset = lvar->offset;
             locals = lvar;
             consume(";");
@@ -409,11 +413,21 @@ Node *unary()
     }
     if (consume("&"))
     {
-        return new_binary(ND_ADDR, unary(), NULL);
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_ADDR;
+        node->lhs = unary();
+        node->type = calloc(1, sizeof(Type));
+        node->type->ty = PTR;
+        node->type->ptr_to = node->lhs->type;
+        return node;
     }
     if (consume("*"))
     {
-        return new_binary(ND_DEREF, unary(), NULL);
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_DEREF;
+        node->lhs = unary();
+        node->type = node->lhs->type->ptr_to;
+        return node;
     }
     return primary();
 }
