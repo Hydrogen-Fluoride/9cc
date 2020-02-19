@@ -136,6 +136,13 @@ Node *func()
         {
             error_at(token->str, "intではありません");
         }
+        Type *type = calloc(1, sizeof(Type));
+        type->ty = INT;
+        while (consume("*"))
+        {
+            type->ptr_to = type;
+            type->ty = PTR;
+        }
         node->arg[i] = calloc(1, sizeof(Node));
         node->arg[i]->kind = ND_LVAR;
         tok = consume_ident();
@@ -152,7 +159,10 @@ Node *func()
         lvar->next = locals;
         lvar->name = tok->str;
         lvar->len = tok->len;
-        lvar->offset = locals ? (locals->offset + 8) : 8;
+        lvar->type = type;
+        node->type = lvar->type;
+        int off = (type->ty == INT) ? 8 : 8;
+        lvar->offset = locals ? (locals->offset + off) : off;
         node->arg[i]->offset = lvar->offset;
         locals = lvar;
         i++;
@@ -179,6 +189,13 @@ Node *stmt()
     Node *node;
     if (consume_token(TK_INT))
     {
+        Type *type = calloc(1, sizeof(Type));
+        type->ty = INT;
+        while (consume("*"))
+        {
+            type->ptr_to = type;
+            type->ty = PTR;
+        }
         Token *tok = consume_ident();
         if (!tok)
         {
@@ -197,7 +214,10 @@ Node *stmt()
             lvar->next = locals;
             lvar->name = tok->str;
             lvar->len = tok->len;
-            lvar->offset = locals ? (locals->offset + 8) : 8;
+            lvar->type = type;
+            node->type = type;
+            int off = (type->ty == INT) ? 8 : 8;
+            lvar->offset = locals ? (locals->offset + off) : off;
             node->offset = lvar->offset;
             locals = lvar;
             consume(";");
@@ -440,6 +460,7 @@ Node *primary()
             if (lvar)
             {
                 node->offset = lvar->offset;
+                node->type = lvar->type;
             }
             else
             {

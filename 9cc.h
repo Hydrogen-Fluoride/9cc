@@ -54,6 +54,14 @@ struct Token
     int len;
 };
 
+typedef struct Type Type;
+struct Type
+{
+    enum { INT, PTR } ty;
+    Type *ptr_to;
+};
+
+
 typedef struct LVar LVar;
 struct LVar
 {
@@ -61,6 +69,7 @@ struct LVar
     char *name;
     int len;
     int offset;
+    Type *type;
 };
 
 typedef struct Node Node;
@@ -75,7 +84,7 @@ struct Node
     Node *statement[100];
     int val;
     int offset;
-    LVar *func;
+    Type *type;
     char *funcname;
     int funclen;
     Node *arg[6];

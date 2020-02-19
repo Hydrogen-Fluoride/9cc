@@ -67,12 +67,13 @@ try() {
 # try 9 'main(){return four() + five();}'
 # try 5 'te() {return 5;} main() {return te();}'
 # try 6 'te(a) {return a+a;} main() {return te(3);}'
-try 9 'int te(int a, int b, int c) {return a + b + c;} int main() {return te(3, 4, 2);}'
-try 14 'int te(int a, int b, int c) {return a * b + c;} int main() {return te(3, 4, 2);}'
-try 5 'int fib(int a) {if (a == 0) return 1; else if (a == 1) return 1; else return fib(a - 1) + fib(a - 2);} int main(){return fib(4);}';
-# try 3 'main(){x = 3; y = &x; return *y;}'
-# try 3 'main(){x = 3; y = 6; z = &y + 8; return *z;}'
+# try 9 'int te(int a, int b, int c) {return a + b + c;} int main() {return te(3, 4, 2);}'
+# try 14 'int te(int a, int b, int c) {return a * b + c;} int main() {return te(3, 4, 2);}'
+# try 5 'int fib(int a) {if (a == 0) return 1; else if (a == 1) return 1; else return fib(a - 1) + fib(a - 2);} int main(){return fib(4);}';
+try 3 'int main(){int x; int y; x = 3; y = &x; return *y;}'
+try 3 'int main(){int x; int y; int z; x = 3; y = 6; z = &y + 8; return *z;}'
 try 9 'int main(){int a; int b; a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
-
+try 3 'int main(){int x; int *y; y = &x; *y=3; return x;}'
+try 3 'int main(){int z; int *x; int **y; x = &z; y = &x; **y=3; return z;}'
 
 echo OK
