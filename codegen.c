@@ -62,10 +62,7 @@ void gen(Node *node)
             {
                 rptr = true;
             }
-            if (node->type->ptr_to->ty == PTR)
-            {
-                ptr = true;
-            }
+            ptr = (node->type->ptr_to->ty == PTR);
         }
         else
         {
@@ -84,17 +81,17 @@ void gen(Node *node)
     case ND_ASSIGN:
         gen_lval(node->lhs);
         gen(node->rhs);
-        printf("    pop rdi\n");
+        printf("    pop rbx\n");
         printf("    pop rax\n");
         if (node->lhs->type->ty == PTR)
         {
-            printf("    mov [rax], rdi\n");
+            printf("    mov [rax], rbx\n");
         }
         else
         {
-            printf("    mov DWORD PTR [rax], edi\n");
+            printf("    mov DWORD PTR [rax], ebx\n");
         }
-        printf("    push rdi\n");
+        printf("    push rbx\n");
         return;
     case ND_RETURN:
         gen(node->lhs);
@@ -180,7 +177,6 @@ void gen(Node *node)
             {
                 printf("    mov DWORD PTR [rax], %s\n", srg[i]);
             }
-            printf("    push rdi\n");
         }
         for (int i = 0; node->statement[i]; i++)
         {
@@ -201,10 +197,12 @@ void gen(Node *node)
         if (node->lhs->type->ty == PTR)
         {
             printf("    mov rax, [rax]\n");
+            ptr = true;
         }
         else
         {
             printf("    mov eax, DWORD PTR [rax]\n");
+            ptr = false;
         }
         printf("    push rax\n");
         return;
@@ -212,6 +210,7 @@ void gen(Node *node)
 
     bool t_lptr = lptr;
     bool t_rptr = rptr;
+    bool t_ptr = ptr;
 
     bool t_isleft = isleft;
     isleft = true;
@@ -220,15 +219,19 @@ void gen(Node *node)
     gen(node->rhs);
     isleft = t_isleft;
 
-    printf("    pop rdi\n");
+    printf("    pop rbx\n");
     printf("    pop rax\n");
 
     switch (node->kind)
     {
     case ND_ADD:
-        if (lptr || rptr)
+        if (lptr && rptr)
         {
-            printf("    sal %s, %d\n", lptr ? "rdi" : "rax", ptr ? 3 : 2);
+            error("加算の両方がポインタ\n");
+        }
+        else if (lptr || rptr)
+        {
+            printf("    sal %s, %d\n", lptr ? "rbx" : "rax", ptr ? 3 : 2);
             if (isleft)
             {
                 lptr = true;
@@ -240,12 +243,25 @@ void gen(Node *node)
                 rptr = true;
             }
         }
-        printf("    add rax, rdi\n");
+        else
+        {
+            if (isleft)
+            {
+                lptr = false;
+                rptr = t_rptr;
+            }
+            else
+            {
+                lptr = t_lptr;
+                rptr = false;
+            }
+        }
+        printf("    add rax, rbx\n");
         break;
     case ND_SUB:
         if (lptr && rptr)
         {
-            printf("    sub rax, rdi\n");
+            printf("    sub rax, rbx\n");
             printf("    sar rax, %d\n", ptr ? 3 : 2);
             if (isleft)
             {
@@ -260,8 +276,8 @@ void gen(Node *node)
         }
         else if (lptr)
         {
-            printf("    sal rdi, %d\n", ptr ? 3 : 2);
-            printf("    sub rax, rdi\n");
+            printf("    sal rbx, %d\n", ptr ? 3 : 2);
+            printf("    sub rax, rbx\n");
             if (isleft)
             {
                 lptr = true;
@@ -273,35 +289,50 @@ void gen(Node *node)
                 rptr = true;
             }
         }
+        else if (rptr)
+        {
+            error("減算の右側のみポインタ\n");
+        }
         else
         {
-            printf("    sub rax, rdi\n");
+            printf("    sub rax, rbx\n");
+            if (isleft)
+            {
+                lptr = false;
+                rptr = t_rptr;
+            }
+            else
+            {
+                lptr = t_lptr;
+                rptr = false;
+            }
         }
+        ptr = t_ptr;
         break;
     case ND_MUL:
-        printf("    imul rax, rdi\n");
+        printf("    imul rax, rbx\n");
         break;
     case ND_DIV:
         printf("    cqo\n");
-        printf("    idiv rdi\n");
+        printf("    idiv rbx\n");
         break;
     case ND_EQ:
-        printf("    cmp rax, rdi\n");
+        printf("    cmp rax, rbx\n");
         printf("    sete al\n");
         printf("    movzb rax, al\n");
         break;
     case ND_NE:
-        printf("    cmp rax, rdi\n");
+        printf("    cmp rax, rbx\n");
         printf("    setne al\n");
         printf("    movzb rax, al\n");
         break;
     case ND_LT:
-        printf("    cmp rax, rdi\n");
+        printf("    cmp rax, rbx\n");
         printf("    setl al\n");
         printf("    movzb rax, al\n");
         break;
     case ND_LE:
-        printf("    cmp rax, rdi\n");
+        printf("    cmp rax, rbx\n");
         printf("    setle al\n");
         printf("    movzb rax, al\n");
         break;

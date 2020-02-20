@@ -31,14 +31,27 @@ int alloc4(int **p, int a, int b, int c, int d)
     *(*p + 3) = d;
 }
 
+int allocp4(int ***p, int *a, int *b, int *c, int *d)
+{
+    *p = malloc(sizeof(int*) * 4);
+    **p = a;
+    *(*p + 1) = b;
+    *(*p + 2) = c;
+    *(*p + 3) = d;
+}
+
 // int main()
 // {
 //     int *p;
 //     alloc4(&p, 1, 2, 4, 8);
 //     int *q;
 //     q = p + 2;
-//     printf("%d\n", *q);
-//     q = p + 3;
-//     printf("%d\n", *q);
+    
+//     int ** x;
+//     allocp4(&x, p, p + 1, p + 2, p + 3);
+//     int **y;
+//     y = x + (q - p);
+//     printf("%d\n", **y);
+
 //     return 0;
 // }
