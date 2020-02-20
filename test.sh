@@ -64,7 +64,7 @@ try() {
 # try 9 'main(){a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
 # try 0 'main(){return foo();}'
 # try 0 'main(){return bar(1, 2);}'
-# try 9 'main(){return four() + five();}'
+try 9 'int main(){return four() + five();}'
 # try 5 'te() {return 5;} main() {return te();}'
 # try 6 'te(a) {return a+a;} main() {return te(3);}'
 try 9 'int te(int a, int b, int c) {return a + b + c;} int main() {return te(3, 4, 2);}'
@@ -74,5 +74,13 @@ try 5 'int main(){int x; int y; x = 3; y = 2; return x + y;}'
 try 9 'int main(){int a; int b; a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
 try 3 'int main(){int x; int *y; y = &x; *y=3; return x;}'
 try 3 'int main(){int z; int *x; int **y; x = &z; y = &x; **y=3; return z;}'
+
+try 4 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q;}'
+try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 3; return *q;}'
+try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = 3 + p; return *q;}'
+try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = 2 + p + 1; return *q;}'
+try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = 2 + (p + 1); return *q;}'
+try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2 - 1; return *q;}'
+try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; int r; r = q - p; return r;}'
 
 echo OK

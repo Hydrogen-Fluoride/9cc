@@ -4,6 +4,11 @@ int labelnum = 0;
 char *rg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 char *srg[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
+bool isleft = false;
+bool lptr = false;
+bool rptr = false;
+bool ptr = false;
+
 void gen_lval(Node *node)
 {
     if (node->kind == ND_DEREF)
@@ -25,6 +30,7 @@ void gen_lval(Node *node)
 void gen(Node *node)
 {
     int lelse, lend, lbegin;
+
     if (!node)
     {
         return;
@@ -33,6 +39,14 @@ void gen(Node *node)
     {
     case ND_NUM:
         printf("    push %d\n", node->val);
+        if (isleft)
+        {
+            lptr = false;
+        }
+        else
+        {
+            rptr = false;
+        }
         return;
     case ND_LVAR:
         gen_lval(node);
@@ -40,10 +54,30 @@ void gen(Node *node)
         if (node->type->ty == PTR)
         {
             printf("    mov rax, [rax]\n");
+            if (isleft)
+            {
+                lptr = true;
+            }
+            else
+            {
+                rptr = true;
+            }
+            if (node->type->ptr_to->ty == PTR)
+            {
+                ptr = true;
+            }
         }
         else
         {
             printf("    mov eax, DWORD PTR [rax]\n");
+            if (isleft)
+            {
+                lptr = false;
+            }
+            else
+            {
+                rptr = false;
+            }
         }
         printf("    push rax\n");
         return;
@@ -176,8 +210,15 @@ void gen(Node *node)
         return;
     }
 
+    bool t_lptr = lptr;
+    bool t_rptr = rptr;
+
+    bool t_isleft = isleft;
+    isleft = true;
     gen(node->lhs);
+    isleft = false;
     gen(node->rhs);
+    isleft = t_isleft;
 
     printf("    pop rdi\n");
     printf("    pop rax\n");
@@ -185,10 +226,57 @@ void gen(Node *node)
     switch (node->kind)
     {
     case ND_ADD:
+        if (lptr || rptr)
+        {
+            printf("    sal %s, %d\n", lptr ? "rdi" : "rax", ptr ? 3 : 2);
+            if (isleft)
+            {
+                lptr = true;
+                rptr = t_rptr;
+            }
+            else
+            {
+                lptr = t_lptr;
+                rptr = true;
+            }
+        }
         printf("    add rax, rdi\n");
         break;
     case ND_SUB:
-        printf("    sub rax, rdi\n");
+        if (lptr && rptr)
+        {
+            printf("    sub rax, rdi\n");
+            printf("    sar rax, %d\n", ptr ? 3 : 2);
+            if (isleft)
+            {
+                lptr = false;
+                rptr = t_rptr;
+            }
+            else
+            {
+                lptr = t_lptr;
+                rptr = false;
+            }
+        }
+        else if (lptr)
+        {
+            printf("    sal rdi, %d\n", ptr ? 3 : 2);
+            printf("    sub rax, rdi\n");
+            if (isleft)
+            {
+                lptr = true;
+                rptr = t_rptr;
+            }
+            else
+            {
+                lptr = t_lptr;
+                rptr = true;
+            }
+        }
+        else
+        {
+            printf("    sub rax, rdi\n");
+        }
         break;
     case ND_MUL:
         printf("    imul rax, rdi\n");
