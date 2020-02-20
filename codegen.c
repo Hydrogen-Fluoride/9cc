@@ -293,7 +293,6 @@ void gen(Node *node)
         {
             printf("    sub rax, rdi\n");
         }
-        ptr = t_ptr;
         break;
     case ND_MUL:
         printf("    imul rax, rdi\n");
@@ -337,6 +336,7 @@ void gen(Node *node)
             rptr = false;
         }
     }
+    ptr = t_ptr;
 
     printf("    push rax\n");
 }

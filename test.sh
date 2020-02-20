@@ -86,5 +86,6 @@ try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + (2 - 1); retur
 try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; int r; r = q - p; return r;}'
 try 4 'int main() {int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; int **x; allocp4(&x, p, p + 1, p + 2, p + 3); int **y; y = x + (q - p); return **y;}'
 try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + (1 < 2); return *q;}'
+try 4 'int main() {int *p; alloc4(&p, 1, 2, 4, 8); int *q; int **x; allocp4(&x, p, p + 1, p + 2, p + 3); int **y; y = x + 2; q = p + (y - x); return *q;}'
 
 echo OK
