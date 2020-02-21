@@ -5,9 +5,9 @@ char *rg[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 char *srg[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 bool isleft = false;
-bool lptr = false;
-bool rptr = false;
-bool ptr = false;
+Type num = {INT, NULL};
+Type *ltype = &num;
+Type *rtype = &num;
 
 void gen_lval(Node *node)
 {
@@ -22,6 +22,15 @@ void gen_lval(Node *node)
         error("代入の左辺値が変数ではありません");
     }
 
+    if (isleft)
+    {
+        ltype = node->type;
+    }
+    else
+    {
+        rtype = node->type;
+    }
+    
     printf("    mov rax, rbp\n");
     printf("    sub rax, %d\n", node->offset);
     printf("    push rax\n");
@@ -31,6 +40,9 @@ void gen(Node *node)
 {
     int lelse, lend, lbegin;
     int rgcount = -1;
+    Type *t_ltype = ltype;
+    Type *t_rtype = rtype;
+    bool t_isleft = isleft;
 
     if (!node)
     {
@@ -42,11 +54,11 @@ void gen(Node *node)
         printf("    push %d\n", node->val);
         if (isleft)
         {
-            lptr = false;
+            ltype = &num;
         }
         else
         {
-            rptr = false;
+            rtype = &num;
         }
         return;
     case ND_LVAR:
@@ -55,33 +67,27 @@ void gen(Node *node)
         if (node->type->ty == PTR)
         {
             printf("    mov rax, [rax]\n");
-            if (isleft)
-            {
-                lptr = true;
-            }
-            else
-            {
-                rptr = true;
-            }
-            ptr = (node->type->ptr_to->ty == PTR);
         }
         else
         {
             printf("    mov eax, DWORD PTR [rax]\n");
-            if (isleft)
-            {
-                lptr = false;
-            }
-            else
-            {
-                rptr = false;
-            }
+        }
+        if (isleft)
+        {
+            ltype = node->type;
+        }
+        else
+        {
+            rtype = node->type;
         }
         printf("    push rax\n");
         return;
     case ND_ASSIGN:
+        isleft = true;
         gen_lval(node->lhs);
+        isleft = false;
         gen(node->rhs);
+        isleft = t_isleft;
         printf("    pop rdi\n");
         printf("    pop rax\n");
         if (node->lhs->type->ty == PTR)
@@ -193,30 +199,41 @@ void gen(Node *node)
         printf("	ret\n");
         return;
     case ND_ADDR:
+        isleft = true;
         gen_lval(node->lhs);
-        return;
-    case ND_DEREF:
-        gen(node->lhs);
-        printf("    pop rax\n");
-        if (node->lhs->type->ty == PTR)
+        isleft = t_isleft;
+        Type addr = { PTR, node->lhs->type };
+        if (isleft)
         {
-            printf("    mov rax, [rax]\n");
-            ptr = true;
+            ltype = &addr;
         }
         else
         {
-            printf("    mov eax, DWORD PTR [rax]\n");
-            ptr = false;
+            rtype = &addr;
+        }        
+        return;
+    case ND_DEREF:
+        isleft = true;
+        gen(node->lhs);
+        isleft = t_isleft;
+        if (ltype->ty != PTR)
+        {
+            error("*をポインタ型以外に適用している\n");
         }
+        printf("    pop rax\n");
+        printf("    mov rax, [rax]\n");
         printf("    push rax\n");
+        if (isleft)
+        {
+            ltype = node->lhs->type->ptr_to;
+        }
+        else
+        {
+            rtype = node->lhs->type->ptr_to;
+        }
         return;
     }
-
-    bool t_lptr = lptr;
-    bool t_rptr = rptr;
-    bool t_ptr = ptr;
-
-    bool t_isleft = isleft;
+    
     isleft = true;
     gen(node->lhs);
     isleft = false;
@@ -231,61 +248,73 @@ void gen(Node *node)
     switch (node->kind)
     {
     case ND_ADD:
-        if (lptr && rptr)
+        if (ltype->ty == PTR && rtype->ty == PTR)
         {
             error("加算の両方がポインタ\n");
         }
-        else if (lptr || rptr)
+        else if (ltype->ty == PTR)
         {
-            printf("    sal %s, %d\n", lptr ? "rdi" : "rax", ptr ? 3 : 2);
+            printf("    sal rdi, %d\n", (ltype->ptr_to->ty == PTR) ? 3 : 2);
             if (isleft)
             {
-                lptr = true;
-                rptr = t_rptr;
+                rtype = t_rtype;
             }
             else
             {
-                lptr = t_lptr;
-                rptr = true;
+                rtype = ltype;
+                ltype = t_ltype;
+            }
+            setptr = true;
+        }
+        else if (rtype->ty == PTR)
+        {
+            printf("    sal rax, %d\n", (rtype->ptr_to->ty == PTR) ? 3 : 2);
+            if (isleft)
+            {
+                ltype = rtype;
+                rtype = t_rtype;
+            }
+            else
+            {
+                ltype = t_ltype;
             }
             setptr = true;
         }
         printf("    add rax, rdi\n");
         break;
     case ND_SUB:
-        if (lptr && rptr)
+        if (ltype->ty == PTR && rtype->ty == PTR)
         {
             printf("    sub rax, rdi\n");
-            printf("    sar rax, %d\n", ptr ? 3 : 2);
+            printf("    sar rax, %d\n", (ltype->ptr_to->ty == PTR) ? 3 : 2);
             if (isleft)
             {
-                lptr = false;
-                rptr = t_rptr;
+                ltype = &num;
+                rtype = t_rtype;
             }
             else
             {
-                lptr = t_lptr;
-                rptr = false;
+                ltype = t_ltype;
+                rtype = &num;
             }
             setptr = true;
         }
-        else if (lptr)
+        else if (ltype->ty == PTR)
         {
-            printf("    sal rdi, %d\n", ptr ? 3 : 2);
+            printf("    sal rdi, %d\n", (ltype->ptr_to->ty == PTR) ? 3 : 2);
             printf("    sub rax, rdi\n");
             if (isleft)
             {
-                lptr = true;
-                rptr = t_rptr;
+                rtype = t_rtype;
             }
             else
             {
-                lptr = t_lptr;
-                rptr = true;
+                rtype = ltype;
+                ltype = t_ltype;
             }
             setptr = true;
         }
-        else if (rptr)
+        else if (rtype->ty == PTR)
         {
             error("減算の右側のみポインタ\n");
         }
@@ -327,16 +356,15 @@ void gen(Node *node)
     {
         if (isleft)
         {
-            lptr = false;
-            rptr = t_rptr;
+            ltype = &num;
+            rtype = t_rtype;
         }
         else
         {
-            lptr = t_lptr;
-            rptr = false;
+            ltype = t_ltype;
+            rtype = &num;
         }
     }
-    ptr = t_ptr;
 
     printf("    push rax\n");
 }
