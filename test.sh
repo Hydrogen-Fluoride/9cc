@@ -74,6 +74,7 @@ try 5 'int fib(int a) {if (a == 0) return 1; else if (a == 1) return 1; else ret
 try 5 'int main(){int x; int y; x = 3; y = 2; return x + y;}'
 try 9 'int main(){int a; int b; a = 4; b = 5; if (a != b) { return a + b; } else { a = 1; b = 1; return a + b; }}'
 try 3 'int main(){int x; int *y; y = &x; *y=3; return x;}'
+try 3 'int main(){int x; int *y; x = 3; y = &x; int z; z = *y; return z;}'
 try 3 'int main(){int z; int *x; int **y; x = &z; y = &x; **y=3; return z;}'
 
 try 4 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q;}'
@@ -87,6 +88,8 @@ try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; int r; r = 
 try 4 'int main() {int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; int **x; allocp4(&x, p, p + 1, p + 2, p + 3); int **y; y = x + (q - p); return **y;}'
 try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + (1 < 2); return *q;}'
 try 4 'int main() {int *p; alloc4(&p, 1, 2, 4, 8); int *q; int **x; allocp4(&x, p, p + 1, p + 2, p + 3); int **y; y = x + 2; q = p + (y - x); return *q;}'
+try 1 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int r; r = *p; return r;}'
+# try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int r; r = *(p + 1); return r;}'
 # try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); return *(p + 1);}'
 # try 3 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); return *p + *(p + 1);}'
 # try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + (*(p + 2) - *p); return *q;}'

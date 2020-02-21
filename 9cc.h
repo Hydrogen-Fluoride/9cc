@@ -102,7 +102,7 @@ void error(char *fmt, ...);
 Token *tokenize(char *p);
 
 // codegen.c
-void gen(Node *node);
+Type *gen(Node *node);
 
 // parse.c
 void program();
