@@ -416,9 +416,6 @@ Node *unary()
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_ADDR;
         node->lhs = unary();
-        node->type = calloc(1, sizeof(Type));
-        node->type->ty = PTR;
-        node->type->ptr_to = node->lhs->type;
         return node;
     }
     if (consume("*"))
@@ -426,7 +423,6 @@ Node *unary()
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_DEREF;
         node->lhs = unary();
-        node->type = node->lhs->type->ptr_to;
         return node;
     }
     return primary();
