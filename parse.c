@@ -179,7 +179,15 @@ Node *func()
         lvar->name = tok->str;
         lvar->len = tok->len;
         lvar->type = type;
-        int off = (type->ty == INT) ? 4 : 8;
+        int off;
+        if (type->ty == PTR)
+        {
+            off = 8;
+        }
+        else if (type->ty == INT)
+        {
+            off = 4;
+        }
         lvar->offset = locals ? (locals->offset + off) : off;
         node->arg[i]->type = lvar->type;
         node->arg[i]->offset = lvar->offset;
@@ -236,7 +244,15 @@ Node *stmt()
             lvar->name = tok->str;
             lvar->len = tok->len;
             lvar->type = type;
-            int off = (type->ty == INT) ? 4 : 8;
+            int off;
+            if (type->ty == PTR)
+            {
+                off = 8;
+            }
+            else if (type->ty == INT)
+            {
+                off = 4;
+            }
             lvar->offset = locals ? (locals->offset + off) : off;
             node->type = type;
             node->offset = lvar->offset;
@@ -422,7 +438,17 @@ Node *unary()
 {
     if (consume_token(TK_SIZEOF))
     {
-        return new_node_num(unary()->type->ty == INT ? 4 : 8);
+        Node *node = unary();
+        int size;
+        if (node->type->ty == PTR)
+        {
+            size = 8;
+        }
+        else if (node->type->ty == INT)
+        {
+            size = 4;
+        }
+        return new_node_num(size);
     }
     
     if (consume("+"))

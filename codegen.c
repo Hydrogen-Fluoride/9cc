@@ -43,7 +43,7 @@ void gen(Node *node)
         {
             printf("    mov rax, [rax]\n");
         }
-        else
+        else if (node->type->ty == INT)
         {
             printf("    mov eax, DWORD PTR [rax]\n");
         }
@@ -62,7 +62,7 @@ void gen(Node *node)
         {
             printf("    mov [rax], rdi\n");
         }
-        else
+        else if (node->lhs->type->ty == INT)
         {
             printf("    mov DWORD PTR [rax], edi\n");
         }
@@ -151,7 +151,7 @@ void gen(Node *node)
             {
                 printf("    mov [rax], %s\n", rg[i]);
             }
-            else
+            else if (node->arg[i]->type->ty == INT)
             {
                 printf("    mov DWORD PTR [rax], %s\n", srg[i]);
             }
@@ -183,7 +183,7 @@ void gen(Node *node)
         {
             printf("    mov rax, [rax]\n");
         }
-        else
+        else if (node->lhs->type->ptr_to->ty == INT)
         {
             printf("    mov eax, DWORD PTR [rax]\n");
         }

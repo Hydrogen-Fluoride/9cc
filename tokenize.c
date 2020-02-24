@@ -17,7 +17,15 @@ bool startswith(char *p, char *q)
 
 bool is_reserved1(char *p)
 {
-    return *p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '<' || *p == '>' || *p == '=' || *p == ';' || *p == '{' || *p == '}' || *p == ',' || *p == '*' || *p == '&';
+    char reserved[16] = {'+', '-', '*', '/', '(', ')', '<', '>', '=', ';', '{', '}', ',', '&', '[', ']'};
+    for (int i = 0; i < sizeof(reserved) / sizeof(char); i++)
+    {
+        if (*p == reserved[i])
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool is_reserved2(char *p)
