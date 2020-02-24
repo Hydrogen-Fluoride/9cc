@@ -8,6 +8,19 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
     node->kind = kind;
     node->lhs = lhs;
     node->rhs = rhs;
+    if (node->lhs->type->ty == node->rhs->type->ty)
+    {
+        node->type = calloc(1, sizeof(Type));
+        node->type->ty = INT;
+    }
+    else if (node->lhs->type->ty == PTR)
+    {
+        node->type = node->lhs->type;
+    }
+    else
+    {
+        node->type = node->rhs->type;
+    }
     return node;
 }
 
@@ -16,6 +29,8 @@ Node *new_node_num(int val)
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_NUM;
     node->val = val;
+    node->type = calloc(1, sizeof(Type));
+    node->type->ty = INT;
     return node;
 }
 
@@ -122,6 +137,8 @@ Node *func()
     }
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_FUNCDEF;
+    node->type = calloc(1, sizeof(Type));
+    node->type->ty = INT;
     node->funcname = tok->str;
     node->funclen = tok->len;
     expect("(");
@@ -403,6 +420,11 @@ Node *mul()
 
 Node *unary()
 {
+    if (consume_token(TK_SIZEOF))
+    {
+        return new_node_num(unary()->type->ty == INT ? 4 : 8);
+    }
+    
     if (consume("+"))
     {
         return primary();
@@ -416,6 +438,9 @@ Node *unary()
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_ADDR;
         node->lhs = unary();
+        node->type = calloc(1, sizeof(Type));
+        node->type->ty = PTR;
+        node->type->ptr_to = node->lhs->type;
         return node;
     }
     if (consume("*"))
@@ -423,6 +448,7 @@ Node *unary()
         Node *node = calloc(1, sizeof(Node));
         node->kind = ND_DEREF;
         node->lhs = unary();
+        node->type = node->lhs->type->ptr_to;
         return node;
     }
     return primary();
@@ -462,6 +488,9 @@ Node *primary()
                 expect(",");
             }
             node->arg[i] = NULL;
+
+            node->type = calloc(1, sizeof(Type));
+            node->type->ty = INT;
         }
         else
         {

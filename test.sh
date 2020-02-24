@@ -93,5 +93,12 @@ try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int r; r = *(p + 1); return r;
 try 2 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); return *(p + 1);}'
 try 3 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); return *p + *(p + 1);}'
 try 8 'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + (*(p + 2) - *p); return *q;}'
+try 4 'int main(){int x; return sizeof(x);}'
+try 8 'int main(){int *y; return sizeof(y);}'
+try 4 'int main(){int x; return sizeof(x + 3);}'
+try 8 'int main(){int *y; return sizeof(y + 3);}'
+try 4 'int main(){int *y; return sizeof(*y);}'
+try 4 'int main(){return sizeof(3);}'
+try 4 'int main(){return sizeof(sizeof(1));}'
 
 echo OK

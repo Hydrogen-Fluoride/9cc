@@ -16,7 +16,8 @@ typedef enum
     TK_ELSE,
     TK_WHILE,
     TK_FOR,
-    TK_INT
+    TK_INT,
+    TK_SIZEOF
 } TokenKind;
 
 typedef enum
@@ -102,7 +103,7 @@ void error(char *fmt, ...);
 Token *tokenize(char *p);
 
 // codegen.c
-Type *gen(Node *node);
+void gen(Node *node);
 
 // parse.c
 void program();

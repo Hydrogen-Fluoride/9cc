@@ -113,6 +113,12 @@ Token *tokenize(char *p)
             continue;
         }
         
+        if (is_reservedn(p, "sizeof"))
+        {
+            cur = new_token(TK_SIZEOF, cur, p, 6);
+            p += 6;
+            continue;
+        }
 
         if (*p >= 'a' && *p <= 'z')
         {
