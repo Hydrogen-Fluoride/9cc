@@ -39,13 +39,16 @@ void gen(Node *node)
     case ND_LVAR:
         gen_lval(node);
         printf("    pop rax\n");
-        if (node->type->ty == PTR)
+        switch (node->type->ty)
         {
+        case PTR:
             printf("    mov rax, [rax]\n");
-        }
-        else if (node->type->ty == INT)
-        {
+            break;
+        case INT:
             printf("    mov eax, DWORD PTR [rax]\n");
+            break;
+        case ARRAY:
+            break;
         }
         printf("    push rax\n");
         return;
@@ -54,17 +57,14 @@ void gen(Node *node)
         gen(node->rhs);
         printf("    pop rdi\n");
         printf("    pop rax\n");
-        if (node->lhs->type->ty != node->rhs->type->ty)
+        switch (node->lhs->type->ty)
         {
-            error("型不一致");
-        }
-        if (node->lhs->type->ty == PTR)
-        {
+        case PTR || ARRAY:
             printf("    mov [rax], rdi\n");
-        }
-        else if (node->lhs->type->ty == INT)
-        {
+            break;
+        case INT:
             printf("    mov DWORD PTR [rax], edi\n");
+            break;
         }
         printf("    push rdi\n");
         return;
@@ -147,13 +147,14 @@ void gen(Node *node)
         {
             printf("    mov rax, rbp\n");
             printf("    sub rax, %d\n", node->arg[i]->offset);
-            if (node->arg[i]->type->ty == PTR)
+            switch (node->arg[i]->type->ty)
             {
+            case PTR:
                 printf("    mov [rax], %s\n", rg[i]);
-            }
-            else if (node->arg[i]->type->ty == INT)
-            {
+                break;
+            case INT:
                 printf("    mov DWORD PTR [rax], %s\n", srg[i]);
+                break;
             }
         }
         for (int i = 0; node->statement[i]; i++)
@@ -168,24 +169,24 @@ void gen(Node *node)
         return;
     case ND_ADDR:
         gen_lval(node->lhs);
-        Type *type = calloc(1, sizeof(Type));
-        type->ptr_to = node->type;
-        type->ty = PTR;
         return;
     case ND_DEREF:
         gen(node->lhs);
-        if (node->lhs->type->ty != PTR)
+        if (!(node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY))
         {
             error("*をポインタ型以外に適用している\n");
         }
         printf("    pop rax\n");
-        if (node->lhs->type->ptr_to->ty == PTR)
+        switch (node->lhs->type->ptr_to->ty)
         {
+        case PTR:
             printf("    mov rax, [rax]\n");
-        }
-        else if (node->lhs->type->ptr_to->ty == INT)
-        {
+            break;
+        case INT:
             printf("    mov eax, DWORD PTR [rax]\n");
+            break;
+        case ARRAY:
+            break;
         }
         printf("    push rax\n");
         return;
@@ -200,32 +201,32 @@ void gen(Node *node)
     switch (node->kind)
     {
     case ND_ADD:
-        if (node->lhs->type->ty == PTR && node->rhs->type->ty == PTR)
+        if ((node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY) && (node->rhs->type->ty == PTR || node->rhs->type->ty == ARRAY))
         {
             error("加算の両方がポインタ\n");
         }
-        else if (node->lhs->type->ty == PTR)
+        else if (node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY)
         {
-            printf("    sal rdi, %d\n", (node->lhs->type->ptr_to->ty == PTR) ? 3 : 2);
+            printf("    sal rdi, %d\n", (node->lhs->type->ptr_to->ty == INT) ? 2 : 3);
         }
-        else if (node->rhs->type->ty == PTR)
+        else if (node->rhs->type->ty == PTR || node->lhs->type->ty == ARRAY)
         {
-            printf("    sal rax, %d\n", (node->rhs->type->ptr_to->ty == PTR) ? 3 : 2);
+            printf("    sal rax, %d\n", (node->rhs->type->ptr_to->ty == INT) ? 2 : 3);
         }
         printf("    add rax, rdi\n");
         break; 
     case ND_SUB:
-        if (node->lhs->type->ty == PTR && node->rhs->type->ty == PTR)
+        if ((node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY) && (node->rhs->type->ty == PTR || node->rhs->type->ty == ARRAY))
         {
             printf("    sub rax, rdi\n");
-            printf("    sar rax, %d\n", (node->lhs->type->ptr_to->ty == PTR) ? 3 : 2);
+            printf("    sar rax, %d\n", (node->lhs->type->ptr_to->ty == INT) ? 2 : 3);
         }
-        else if (node->lhs->type->ty == PTR)
+        else if (node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY)
         {
-            printf("    sal rdi, %d\n", (node->lhs->type->ptr_to->ty == PTR) ? 3 : 2);
+            printf("    sal rdi, %d\n", (node->lhs->type->ptr_to->ty == INT) ? 2 : 3);
             printf("    sub rax, rdi\n");
         }
-        else if (node->rhs->type->ty == PTR)
+        else if (node->rhs->type->ty == PTR || node->rhs->type->ty == ARRAY)
         {
             error("減算の右側のみポインタ\n");
         }

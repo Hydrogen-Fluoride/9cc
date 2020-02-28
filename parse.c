@@ -2,6 +2,20 @@
 
 LVar *locals;
 
+Node* array_to_ptr(Node *node)
+{
+    if (node->type->ty != ARRAY)
+    {
+        return node;
+    }
+
+    Type *type = calloc(1, sizeof(Type));
+    type->ty = PTR;
+    type->ptr_to = node->type->ptr_to;
+    node->type = type;
+    return node;
+}
+
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
 {
     Node *node = calloc(1, sizeof(Node));
@@ -13,7 +27,7 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
         node->type = calloc(1, sizeof(Type));
         node->type->ty = INT;
     }
-    else if (node->lhs->type->ty == PTR)
+    else if (node->lhs->type->ty == PTR || node->lhs->type->ty == ARRAY)
     {
         node->type = node->lhs->type;
     }
@@ -21,7 +35,7 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
     {
         node->type = node->rhs->type;
     }
-    return node;
+    return array_to_ptr(node);
 }
 
 Node *new_node_num(int val)
@@ -102,6 +116,19 @@ LVar *find_lvar(Token *tok)
     return NULL;
 }
 
+int calc_offset(Type* type)
+{
+    switch (type->ty)
+    {
+    case PTR:
+        return 8;
+    case INT:
+        return 4;
+    case ARRAY:
+        return calc_offset(type->ptr_to) * type->array_size;
+    }
+}
+
 Node *func();
 Node *stmt();
 Node *expr();
@@ -179,15 +206,7 @@ Node *func()
         lvar->name = tok->str;
         lvar->len = tok->len;
         lvar->type = type;
-        int off;
-        if (type->ty == PTR)
-        {
-            off = 8;
-        }
-        else if (type->ty == INT)
-        {
-            off = 4;
-        }
+        int off = calc_offset(type);
         lvar->offset = locals ? (locals->offset + off) : off;
         node->arg[i]->type = lvar->type;
         node->arg[i]->offset = lvar->offset;
@@ -230,6 +249,15 @@ Node *stmt()
         {
             error_at(token->str, "変数ではありません");
         }
+        if (consume("["))
+        {
+            Type *newtype = calloc(1, sizeof(Type));
+            newtype->ty = ARRAY;
+            newtype->ptr_to = type;
+            newtype->array_size = expect_number();
+            type = newtype;
+            expect("]");
+        }
         LVar *lvar = find_lvar(tok);
         if (lvar)
         {
@@ -244,15 +272,7 @@ Node *stmt()
             lvar->name = tok->str;
             lvar->len = tok->len;
             lvar->type = type;
-            int off;
-            if (type->ty == PTR)
-            {
-                off = 8;
-            }
-            else if (type->ty == INT)
-            {
-                off = 4;
-            }
+            int off = calc_offset(type);
             lvar->offset = locals ? (locals->offset + off) : off;
             node->type = type;
             node->offset = lvar->offset;
@@ -438,19 +458,8 @@ Node *unary()
 {
     if (consume_token(TK_SIZEOF))
     {
-        Node *node = unary();
-        int size;
-        if (node->type->ty == PTR)
-        {
-            size = 8;
-        }
-        else if (node->type->ty == INT)
-        {
-            size = 4;
-        }
-        return new_node_num(size);
+        return new_node_num(calc_offset(unary()->type));
     }
-    
     if (consume("+"))
     {
         return primary();
@@ -475,7 +484,7 @@ Node *unary()
         node->kind = ND_DEREF;
         node->lhs = unary();
         node->type = node->lhs->type->ptr_to;
-        return node;
+        return array_to_ptr(node);
     }
     return primary();
 }

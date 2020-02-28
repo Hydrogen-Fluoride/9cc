@@ -100,5 +100,10 @@ try 8 'int main(){int *y; return sizeof(y + 3);}'
 try 4 'int main(){int *y; return sizeof(*y);}'
 try 4 'int main(){return sizeof(3);}'
 try 4 'int main(){return sizeof(sizeof(1));}'
+try 8 'int main(){int a[2]; return sizeof(a);}'
+try 1 'int main(){int a[2]; *a = 1; return *a;}'
+try 2 'int main(){int a[2]; *a = 1; *a = 2; return *a;}'
+try 2 'int main(){int a[2]; *a = 1; *(a + 1) = 2; return *(a + 1);}'
+try 3 'int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 
 echo OK
