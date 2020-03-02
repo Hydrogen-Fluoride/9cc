@@ -249,7 +249,7 @@ Node *stmt()
         {
             error_at(token->str, "変数ではありません");
         }
-        if (consume("["))
+        while (consume("["))
         {
             Type *newtype = calloc(1, sizeof(Type));
             newtype->ty = ARRAY;
