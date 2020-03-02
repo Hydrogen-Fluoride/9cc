@@ -108,5 +108,12 @@ try 3 'int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p
 try 5 'int main(){int a[10][10];**a = 5;return **a;}'
 try 5 'int main(){int a[10][10];*(*a + 1) = 5;return *(*a + 1);}'
 try 5 'int main(){int a[10][10];**(a + 1) = 5;return **(a + 1);}'
+try 1 'int main(){int a[2]; a[0] = 1; return a[0];}'
+try 2 'int main(){int a[2]; a[0] = 1; a[0] = 2; return a[0];}'
+try 2 'int main(){int a[2]; a[0] = 1; a[1] = 2; return a[1];}'
+try 3 'int main(){int a[2]; a[0] = 1; a[1] = 2; int *p; p = a; return *p + *(p + 1);}'
+try 5 'int main(){int a[10][10]; a[0][0] = 5; return a[0][0];}'
+try 5 'int main(){int a[10][10]; a[0][1] = 5;return *(*a + 1);}'
+try 5 'int main(){int a[10][10]; a[1][0] = 5;return **(a + 1);}'
 
 echo OK

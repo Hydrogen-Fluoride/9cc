@@ -486,7 +486,17 @@ Node *unary()
         node->type = node->lhs->type->ptr_to;
         return array_to_ptr(node);
     }
-    return primary();
+    Node *node = primary();
+    while (consume("["))
+    {
+        Node *newnode = calloc(1, sizeof(Node));
+        newnode->kind = ND_DEREF;
+        newnode->lhs = new_binary(ND_ADD, node, expr());
+        newnode->type = newnode->lhs->type->ptr_to;
+        expect("]");
+        node = newnode;
+    }
+    return node;
 }
 
 Node *primary()
