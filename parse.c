@@ -2,18 +2,17 @@
 
 LVar *locals;
 
-Node* array_to_ptr(Node *node)
+void array_to_ptr(Node **node)
 {
-    if (node->type->ty != ARRAY)
+    if ((*node)->type->ty != ARRAY)
     {
-        return node;
+        return;
     }
 
     Type *type = calloc(1, sizeof(Type));
     type->ty = PTR;
-    type->ptr_to = node->type->ptr_to;
-    node->type = type;
-    return node;
+    type->ptr_to = (*node)->type->ptr_to;
+    (*node)->type = type;
 }
 
 Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
@@ -35,7 +34,8 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs)
     {
         node->type = node->rhs->type;
     }
-    return array_to_ptr(node);
+    array_to_ptr(&node);
+    return node;
 }
 
 Node *new_node_num(int val)
@@ -129,6 +129,30 @@ int calc_offset(Type* type)
     }
 }
 
+void consume_ptr(Type **type)
+{
+    while (consume("*"))
+    {
+        Type *newtype = calloc(1, sizeof(Type));
+        newtype->ptr_to = *type;
+        newtype->ty = PTR;
+        *type = newtype;
+    }
+}
+
+void consume_array(Type **type)
+{
+    while (consume("["))
+    {
+        Type *newtype = calloc(1, sizeof(Type));
+        newtype->ty = ARRAY;
+        newtype->ptr_to = *type;
+        newtype->array_size = expect_number();
+        *type = newtype;
+        expect("]");
+    }
+}
+
 Node *func();
 Node *stmt();
 Node *expr();
@@ -157,18 +181,27 @@ Node *func()
     {
         error_at(token->str, "intではありません");
     }
+    Node *node = calloc(1, sizeof(Node));
+    node->type = calloc(1, sizeof(Type));
+    node->type->ty = INT;
+    consume_ptr(&(node->type));
     Token *tok = consume_ident();
     if (!tok)
     {
-        error_at(token->str, "関数ではありません");
+        error_at(token->str, "関数・グローバル変数ではありません");
     }
-    Node *node = calloc(1, sizeof(Node));
+    if (!consume("("))
+    {
+        // グローバル変数の場合
+        node->kind = ND_GVAR;
+        consume_array(&(node->type));
+        // mapに入れたりなんやかんやする
+        return node;
+    }
+    // 関数定義の場合
     node->kind = ND_FUNCDEF;
-    node->type = calloc(1, sizeof(Type));
-    node->type->ty = INT;
     node->funcname = tok->str;
     node->funclen = tok->len;
-    expect("(");
     int i = 0;
     while (true)
     {
@@ -182,13 +215,7 @@ Node *func()
         }
         Type *type = calloc(1, sizeof(Type));
         type->ty = INT;
-        while (consume("*"))
-        {
-            Type *newtype = calloc(1, sizeof(Type));
-            newtype->ptr_to = type;
-            newtype->ty = PTR;
-            type = newtype;
-        }
+        consume_ptr(&type);
         node->arg[i] = calloc(1, sizeof(Node));
         node->arg[i]->kind = ND_LVAR;
         tok = consume_ident();
@@ -237,27 +264,13 @@ Node *stmt()
     {
         Type *type = calloc(1, sizeof(Type));
         type->ty = INT;
-        while (consume("*"))
-        {
-            Type *newtype = calloc(1, sizeof(Type));
-            newtype->ptr_to = type;
-            newtype->ty = PTR;
-            type = newtype;
-        }
+        consume_ptr(&type);
         Token *tok = consume_ident();
         if (!tok)
         {
             error_at(token->str, "変数ではありません");
         }
-        while (consume("["))
-        {
-            Type *newtype = calloc(1, sizeof(Type));
-            newtype->ty = ARRAY;
-            newtype->ptr_to = type;
-            newtype->array_size = expect_number();
-            type = newtype;
-            expect("]");
-        }
+        consume_array(&type);
         LVar *lvar = find_lvar(tok);
         if (lvar)
         {
@@ -484,7 +497,8 @@ Node *unary()
         node->kind = ND_DEREF;
         node->lhs = unary();
         node->type = node->lhs->type->ptr_to;
-        return array_to_ptr(node);
+        array_to_ptr(&node);
+        return node;
     }
     Node *node = primary();
     while (consume("["))

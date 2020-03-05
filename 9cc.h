@@ -42,7 +42,8 @@ typedef enum
     ND_FUNC,
     ND_FUNCDEF,
     ND_ADDR,
-    ND_DEREF
+    ND_DEREF,
+    ND_GVAR
 } NodeKind;
 
 typedef struct Token Token;
